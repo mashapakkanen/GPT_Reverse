@@ -1,5 +1,6 @@
 import math as math
 
+
 class HydraulicSystem:
 
     def __init__(self, pipe_diameter):
@@ -7,28 +8,32 @@ class HydraulicSystem:
         self.adjusted_parameter = None
 
     @staticmethod
-    def _calculate_correction_factor(liquid_holdup, froude_squared, property_term, inclination_angle, coeff_a, exp_b, exp_c, exp_d):
-        log_argument = max(coeff_a * liquid_holdup**exp_b * property_term**exp_c * froude_squared**exp_d, 1e-6)
+    def _calculate_correction_factor(liquid_holdup, froude_squared, property_term, inclination_angle, coeff_a, exp_b,
+                                     exp_c, exp_d):
+        log_argument = max(coeff_a * liquid_holdup ** exp_b * property_term ** exp_c * froude_squared ** exp_d, 1e-6)
         logarithmic_term = (1 - liquid_holdup) * math.log(log_argument)
         non_negative_term = max(logarithmic_term, 0)
         angle_ratio = math.sin(math.pi / 100 * inclination_angle)
-        correction_factor = 1 + non_negative_term * (angle_ratio - 0.333 * angle_ratio**3)
+        correction_factor = 1 + non_negative_term * (angle_ratio - 0.333 * angle_ratio ** 3)
         return correction_factor
 
     @staticmethod
     def _determine_flow_regime(froude_squared, liquid_holdup):
-        bubble_threshold = 316 * liquid_holdup**0.302
-        transition_low = 0.0009252 / liquid_holdup**2.4684
-        transition_high = 0.1 / liquid_holdup**1.4516
-        annular_threshold = 0.5 / liquid_holdup**6.738
+        bubble_threshold = 316 * liquid_holdup ** 0.302
+        transition_low = 0.0009252 / liquid_holdup ** 2.4684
+        transition_high = 0.1 / liquid_holdup ** 1.4516
+        annular_threshold = 0.5 / liquid_holdup ** 6.738
 
-        if (liquid_holdup < 0.4 and froude_squared >= bubble_threshold) or (liquid_holdup >= 0.4 and froude_squared > annular_threshold):
+        if (liquid_holdup < 0.4 and froude_squared >= bubble_threshold) or (
+                liquid_holdup >= 0.4 and froude_squared > annular_threshold):
             regime = 2
-        elif (liquid_holdup < 0.01 and froude_squared < bubble_threshold) or (liquid_holdup >= 0.01 and froude_squared < transition_low):
+        elif (liquid_holdup < 0.01 and froude_squared < bubble_threshold) or (
+                liquid_holdup >= 0.01 and froude_squared < transition_low):
             regime = 0
         elif liquid_holdup >= 0.01 and transition_high >= froude_squared >= transition_low:
             regime = 3
-        elif (0.4 > liquid_holdup >= 0.01 and transition_high < froude_squared <= bubble_threshold) or (liquid_holdup > 0.4 and transition_high <= froude_squared <= annular_threshold):
+        elif (0.4 > liquid_holdup >= 0.01 and transition_high < froude_squared <= bubble_threshold) or (
+                liquid_holdup > 0.4 and transition_high <= froude_squared <= annular_threshold):
             regime = 1
         else:
             regime = 1
@@ -36,41 +41,43 @@ class HydraulicSystem:
 
     def _calculate_flow_component(self, regime, liquid_holdup, froude_squared, property_term, inclination_angle):
         if regime in {0, 3}:
-            base_value = 0.98 * liquid_holdup**0.4846 / froude_squared**0.0868
+            base_value = 0.98 * liquid_holdup ** 0.4846 / froude_squared ** 0.0868
             constrained_value = min(max(base_value, liquid_holdup), 1)
-            
+
             if inclination_angle >= 0:
                 a, b, c, d = 0.011, -3.768, 3.539, -1.614
             else:
                 a, b, c, d = 4.70, -0.3692, 0.1244, -0.5056
-                
-            correction = self._calculate_correction_factor(liquid_holdup, froude_squared, property_term, inclination_angle, a, b, c, d)
+
+            correction = self._calculate_correction_factor(liquid_holdup, froude_squared, property_term,
+                                                           inclination_angle, a, b, c, d)
             adjusted_value = constrained_value * correction
             adjusted_value = max(min(adjusted_value, 1), 0.2 * liquid_holdup)
             stratified_value = adjusted_value
 
         if regime in {1, 3}:
-            base_value = 0.845 * liquid_holdup**0.5351 / froude_squared**0.0173
+            base_value = 0.845 * liquid_holdup ** 0.5351 / froude_squared ** 0.0173
             constrained_value = min(max(base_value, liquid_holdup), 1)
-            
+
             if inclination_angle >= 0:
                 a, b, c, d = 2.96, 0.305, -0.4473, 0.0978
             else:
                 a, b, c, d = 4.70, -0.3692, 0.1244, -0.5056
-                
-            correction = self._calculate_correction_factor(liquid_holdup, froude_squared, property_term, inclination_angle, a, b, c, d)
+
+            correction = self._calculate_correction_factor(liquid_holdup, froude_squared, property_term,
+                                                           inclination_angle, a, b, c, d)
             adjusted_value = constrained_value * correction
             adjusted_value = max(min(adjusted_value, 1), 0.2 * liquid_holdup)
             slug_value = adjusted_value
 
         if regime == 3:
-            transition_low = 0.0009252 / liquid_holdup**2.4684
-            transition_high = 0.1 / liquid_holdup**1.4516
+            transition_low = 0.0009252 / liquid_holdup ** 2.4684
+            transition_high = 0.1 / liquid_holdup ** 1.4516
             blend_factor = (transition_high - froude_squared) / (transition_high - transition_low)
             adjusted_value = blend_factor * stratified_value + (1 - blend_factor) * slug_value
 
         if regime == 2:
-            base_value = 1.065 * liquid_holdup**0.5824 / froude_squared**0.0609
+            base_value = 1.065 * liquid_holdup ** 0.5824 / froude_squared ** 0.0609
             adjusted_value = min(max(base_value, liquid_holdup), 1)
 
         if inclination_angle >= 0:
@@ -80,26 +87,6 @@ class HydraulicSystem:
             adjusted_value *= 0.685
 
         return adjusted_value
-
-    def calculate_gravity_force(self, inclination_angle, time_step):
-        self.gravity_force = self.density * 9.81 * math.sin(math.radians(inclination_angle)) * time_step
-        return self.gravity_force
-
-    def calculate_friction_loss(self, flow_rate, liquid_rate, liquid_viscosity, gas_viscosity, friction_factor, **kwargs):
-        if self.flow_velocity == 0:
-            self.friction_coefficient = 0
-        else:
-            velocity_ratio = flow_rate / self.pipe_diameter
-            mixture_viscosity = liquid_viscosity * self.liquid_holdup + gas_viscosity * (1 - self.liquid_holdup)
-            self.reynolds_number = self.pipe_diameter * self.flow_velocity * self.density / mixture_viscosity
-            self.friction_base = 1 / self.reynolds_number
-            viscosity_ratio = max(self.liquid_holdup / froude_squared**2, 1e-6)
-            log_term = math.log(max(viscosity_ratio, 1e-6))
-            self.friction_coefficient = self.friction_base * math.exp(
-                log_term / (-0.0523 + 3.182*log_term - 0.8725*log_term**2 + 0.01853*log_term**4) 
-                if 1 < viscosity_ratio < 1.2 else math.log(2.2*viscosity_ratio - 1.2))
-        self.energy_loss = self.friction_coefficient * self.density * self.flow_velocity**2 / (2 * self.pipe_diameter) * friction_factor
-        return self.energy_loss
 
     def update_flow_parameters(self, inclination_angle, liquid_rate, gas_rate, liquid_density, gas_density, gravity, **kwargs):
         self.inclination = inclination_angle

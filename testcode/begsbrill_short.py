@@ -1,6 +1,6 @@
 import math as mt
 
-class ClassA:
+class ClassB:
 
     def __init__(self, local_1):
         self.local_1 = local_1
@@ -8,25 +8,27 @@ class ClassA:
 
     @staticmethod
     def _func_x(local_3, local_4, local_5, local_6, local_7, local_8, local_9, local_10):
-        local_11 = (1 - local_3) * mt.log(max(local_7 * local_3**local_8 * local_5**local_9 * local_4**local_10, 0.000001))
+        local_11 = (1 - local_3) * mt.log(
+            max(local_7 * local_3 ** local_8 * local_5 ** local_9 * local_4 ** local_10, 0.000001))
         local_11 = max(local_11, 0)
         local_12 = mt.sin(mt.pi / 100 * local_6)
-        local_13 = 1 + local_11 * (local_12 - 0.333 * local_12**3)
+        local_13 = 1 + local_11 * (local_12 - 0.333 * local_12 ** 3)
         return local_13
 
     @staticmethod
     def _func_y(local_4, local_3):
-        local_14 = 316 * local_3**0.302
-        local_15 = 0.0009252 / (local_3**2.4684)
-        local_16 = 0.1 / (local_3**1.4516)
-        local_17 = 0.5 / (local_3**6.738)
+        local_14 = 316 * local_3 ** 0.302
+        local_15 = 0.0009252 / (local_3 ** 2.4684)
+        local_16 = 0.1 / (local_3 ** 1.4516)
+        local_17 = 0.5 / (local_3 ** 6.738)
         if (local_3 < 0.4 and local_4 >= local_14) or (local_3 >= 0.4 and local_4 > local_17):
             local_18 = 2
         elif (local_3 < 0.01 and local_4 < local_14) or (local_3 >= 0.01 and local_4 < local_15):
             local_18 = 0
         elif local_3 >= 0.01 and local_16 >= local_4 >= local_15:
             local_18 = 3
-        elif (0.4 > local_3 >= 0.01 and local_16 < local_4 <= local_14) or (local_3 > 0.4 and local_16 <= local_4 <= local_17):
+        elif (0.4 > local_3 >= 0.01 and local_16 < local_4 <= local_14) or (
+                local_3 > 0.4 and local_16 <= local_4 <= local_17):
             local_18 = 1
         else:
             local_18 = 1
@@ -34,7 +36,7 @@ class ClassA:
 
     def _func_z(self, local_18, local_3, local_4, local_5, local_6):
         if local_18 in {0, 3}:
-            local_19 = 0.98 * local_3**0.4846 / (local_4**0.0868)
+            local_19 = 0.98 * local_3 ** 0.4846 / (local_4 ** 0.0868)
             local_19 = min(local_19, 1)
             local_19 = max(local_3, local_19)
             if local_6 >= 0:
@@ -48,7 +50,7 @@ class ClassA:
             local_21 = local_20
 
         if local_18 in {1, 3}:
-            local_19 = 0.845 * local_3**0.5351 / (local_4**0.0173)
+            local_19 = 0.845 * local_3 ** 0.5351 / (local_4 ** 0.0173)
             local_19 = min(local_19, 1)
             local_19 = max(local_3, local_19)
             if local_6 >= 0:
@@ -62,13 +64,13 @@ class ClassA:
             local_22 = local_20
 
         if local_18 == 3:
-            local_15 = 0.0009252 / local_3**2.4684
-            local_16 = 0.1 / local_3**1.4516
+            local_15 = 0.0009252 / local_3 ** 2.4684
+            local_16 = 0.1 / local_3 ** 1.4516
             local_23 = (local_16 - local_4) / (local_16 - local_15)
             local_20 = local_23 * local_21 + (1 - local_23) * local_22
 
         if local_18 == 2:
-            local_19 = 1.065 * local_3**0.5824 / local_4**0.0609
+            local_19 = 1.065 * local_3 ** 0.5824 / local_4 ** 0.0609
             local_19 = min(local_19, 1)
             local_19 = max(local_3, local_19)
             local_20 = local_19
@@ -81,27 +83,6 @@ class ClassA:
 
         return local_20
 
-    def fun_1(self, local_6, local_24):
-        self.local_25 = self.local_26 * 9.81 * mt.sin(local_6 / 180 * mt.pi) * local_24
-        return self.local_25
-
-    def fun_2(self, local_27, local_28, local_29, local_30, local_31, **kwargs):
-        if self.local_32 == 0:
-            self.local_33 = 0
-        else:
-            local_34 = local_27 / self.local_1
-            local_35 = local_29 * self.local_3 + local_30 * (1 - self.local_3)
-            self.local_36 = self.local_1 * self.local_37 * self.local_32 / local_35
-            self.local_38 = 1 / self.local_36
-            local_39 = max(self.locbegal_3 / self.local_4**2, 0.000001)
-            local_40 = mt.log(max(local_39, 0.000001))
-            if 1 < local_39 < 1.2:
-                local_41 = mt.log(2.2 * local_39 - 1.2)
-            else:
-                local_41 = local_40 / (-0.0523 + 3.182 * local_40 - 0.8725 * local_40**2 + 0.01853 * local_40**4)
-            self.local_33 = self.local_38 * mt.exp(local_41)
-        self.local_42 = self.local_33 * self.local_37 * self.local_32**2 / (2 * self.local_1) * local_31
-        return self.local_42
 
     def fun_3(self, local_6, local_28, local_43, local_44, local_45, local_46, **kwargs):
         self.local_47 = local_6
