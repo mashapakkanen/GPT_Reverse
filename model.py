@@ -96,12 +96,13 @@ class DeepSeekModel(Model):
         self.completion = None
 
     def run(self, input_code: str) -> str:
+        prompt = open('prompt.txt', 'r').read()
         self.completion = self.client.chat.completions.create(
             model="deepseek/deepseek-r1-0528:free",
             messages=[
                 {
                     "role": "user",
-                    "content": "Please provide only the code as output. The code should include the following modifications:   All original mathematical expressions should be decrypted or made explicit (e.g., simplify encoded formulas or clarify any mathematical logic).    All variable names should be renamed to meaningful names based on their purpose.    All class names should be changed by appending _new to the original name (e.g., ClassB -> ClassB_new).    Function names must remain unchanged.    Add full documentation (docstrings and comments) to explain the purpose and logic of the code. Do not include any text outside of the code block. Please write working code as content (even if not fully decrypted), you don't have to write explanation.\n" + input_code
+                    "content": str(prompt + input_code)
                 }
             ],
             stream=False,

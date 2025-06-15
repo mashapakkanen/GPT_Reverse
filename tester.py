@@ -1,4 +1,7 @@
+import ast
 import importlib, os
+import itertools
+import json
 from abc import ABC, abstractmethod
 
 class Tester(ABC):
@@ -70,3 +73,45 @@ class DPTester(Tester):
         res2 = fun1_new(1, 0.1, 827.1, 830, .05)
 
         return expected1 == res1 and expected2 == res2
+
+class OneFuncTester(Tester):
+    def __init__(self):
+        pass
+
+    def compile_function(self, code_str, func_name):
+        env = {}
+        exec(code_str, env)
+        return env[func_name]
+
+    def generate_test_inputs(self, arg_names, base):
+        values = [base[name] for name in arg_names]
+        for combo in itertools.product(*values):
+            yield dict(zip(arg_names, combo))
+
+    def test(self, input_code: str, new_code: str):
+        generated_code = open(new_code, 'r').read()
+        original_code = open(input_code, 'r').read()
+        tree = ast.parse(generated_code)
+        with open("variables.json") as f:
+            variable_base = json.load(f)
+        args = []
+        new_name = ""
+        for node in tree.body:
+            if isinstance(node, ast.FunctionDef):
+                args = [arg.arg for arg in node.args.args]
+                new_name = node.name
+                break
+
+        original_func = self.compile_function(original_code, "fun1")
+        generated_func = self.compile_function(generated_code, new_name)
+
+        for input_values in self.generate_test_inputs(args, variable_base):
+            inputs = {input_values[k] for k in args}
+            result1 = original_func(*inputs)
+            result2 = generated_func(*inputs)
+            if abs(result1 - result2) > 1e-9:
+                return False
+        print("All tests passed.")
+        return True
+
+
