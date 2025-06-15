@@ -1,45 +1,40 @@
 from math import pi
 
-
-def fun1(mass_flow_rate, diameter1, density1, density2, diameter2=None):
+def fun1(mass_flow, exit_diameter, inlet_density, outlet_density, inlet_diameter=None):
     """
-    Calculate the dynamic pressure difference between two pipe sections.
+    Compute the kinetic energy change per unit volume of a flowing fluid between two sections.
 
-    The function computes the difference in dynamic pressure between two sections of a pipe
-    with different diameters and fluid densities, based on the mass flow rate. The dynamic
-    pressure difference is calculated using the average density and the velocities in the
-    two sections.
+    This function calculates the change in kinetic energy per unit volume by comparing fluid flow 
+    parameters between an inlet section and an outlet section. The kinetic energy difference is 
+    based on velocities derived from mass flow rate, cross-sectional areas, and fluid densities.
 
     Parameters:
-    mass_flow_rate (float): The mass flow rate of the fluid (kg/s).
-    diameter1 (float): Diameter of the first pipe section (m).
-    density1 (float): Density of the fluid in the first pipe section (kg/m³).
-    density2 (float): Density of the fluid in the second pipe section (kg/m³).
-    diameter2 (float, optional): Diameter of the second pipe section. Defaults to diameter1.
+    mass_flow (float): Mass flow rate of the fluid [kg/s]
+    exit_diameter (float): Diameter of the outlet pipe [m]
+    inlet_density (float): Fluid density at the inlet section [kg/m³]
+    outlet_density (float): Fluid density at the outlet section [kg/m³]
+    inlet_diameter (float, optional): Diameter of the inlet pipe [m]. 
+        If not provided, defaults to exit_diameter.
 
     Returns:
-    float: The dynamic pressure difference between the two sections (Pa).
+    float: Change in kinetic energy per unit volume [J/m³]
     """
-    # Use diameter1 for diameter2 if not provided
-    if diameter2 is None:
-        diameter2 = diameter1
+    # Use exit_diameter if inlet_diameter is not provided
+    if inlet_diameter is None:
+        inlet_diameter = exit_diameter
 
-    # Calculate cross-sectional areas of the pipe sections
-    area_section2 = 0.25 * pi * diameter2 ** 2  # Area of second section (m²)
-    area_section1 = 0.25 * pi * diameter1 ** 2  # Area of first section (m²)
+    # Calculate cross-sectional area at inlet and outlet
+    inlet_area = 0.25 * pi * inlet_diameter**2
+    outlet_area = 0.25 * pi * exit_diameter**2
 
-    # Compute volume flow rates for each section
-    volume_flow_section2 = mass_flow_rate / density2  # Q = m_dot / rho (m³/s)
-    volume_flow_section1 = mass_flow_rate / density1  # Q = m_dot / rho (m³/s)
+    # Calculate velocities at inlet and outlet using mass flow rate and densities
+    # velocity = mass_flow / (density * area)
+    inlet_velocity = mass_flow / (outlet_density * inlet_area)
+    outlet_velocity = mass_flow / (inlet_density * outlet_area)
 
-    # Calculate velocities in each section (velocity = Q / A)
-    velocity_section2 = volume_flow_section2 / area_section2  # v2 (m/s)
-    velocity_section1 = volume_flow_section1 / area_section1  # v1 (m/s)
+    # Calculate average density between inlet and outlet
+    average_density = 0.5 * (inlet_density + outlet_density)
 
-    # Compute average density between the two sections
-    average_density = 0.5 * (density1 + density2)  # Average rho (kg/m³)
-
-    # Calculate dynamic pressure difference using average density and velocity difference
-    dynamic_pressure_diff = 0.5 * average_density * (velocity_section1 ** 2 - velocity_section2 ** 2)  # ΔP (Pa)
-
-    return dynamic_pressure_diff
+    # Compute kinetic energy change per unit volume:
+    # ΔKE = (1/2) * average_density * (outlet_velocity² - inlet_velocity²)
+    return 0.5 * average_density * (outlet_velocity**2 - inlet_velocity**2)

@@ -10,18 +10,19 @@ class Process:
         self.model = model
         self.tester = tester
 
-    def process(self):
+    def process(self, times=5):
         with open(self.input_file, "r") as f:
             code_lines = f.readlines()
         code = "".join(code_lines)
-        newcode = self.model.run(code)
-        print(newcode)
-        if newcode.startswith("```python"):
-            newcode = newcode[10:-3]
-        with open(self.output_file, "w") as f:
-            f.write(newcode)
-        if self.tester.test(self.input_file, self.output_file):
-            print("Success: The new code is correct.")
+        for i in range(times):
+            newcode = self.model.run(code)
+            if newcode.startswith("```python"):
+                newcode = newcode[10:-3]
+            with open(self.output_file, "w") as f:
+                f.write(newcode)
+            if self.tester.test(self.input_file, self.output_file):
+                print("Success: The new code is correct.")
+                return
 
 
         
